@@ -13,86 +13,110 @@ p2sSocket.connect(server)
 
 rfcList={}
 rfcPath=os.getcwd()+'/RFC/'
-for rfc in rfcPath:
+for rfc in os.listdir(rfcPath):
     rfcNum,rfcTitle=rfc.split("-")
+    rfcTitle,_=rfcTitle.split(".")
     rfcList[int(rfcNum)]=str(rfcTitle)
 
 message=""
 for rfcNum,rfcTitle in rfcList.items():
-    message+="ADD RFC "+rfcNum+" P2P-CI/1.0\n"\
+    message+="ADD RFC "+str(rfcNum)+" P2P-CI/1.0\n"\
              "Host: "+hostName+"\n"\
-             "Port: "+hostPort+"\n"\
-             "Title: "+rfcTitle+"\n"
-p2sSocket.sendall(message)
+             "Port: "+str(hostPort)+"\n"\
+             "Title: "+rfcTitle+"\n\n"
+p2sSocket.sendall(message.encode('utf-8'))
+registerResponse=p2sSocket.recv(1024)
+print(registerResponse.decode('utf-8'))
 
 def p2sAddMessage(rfcNum,rfcTitle):
-    addMessage="ADD RFC "+rfcNum+" P2P-CI/1.0\n"\
+    addMessage="ADD RFC "+str(rfcNum)+" P2P-CI/1.0\n"\
              "Host: "+hostName+"\n"\
-             "Port: "+hostPort+"\n"\
+             "Port: "+str(hostPort)+"\n"\
              "Title: "+rfcTitle
     return addMessage
 
 def p2sLookupMessage(rfcNum,rfcTitle):
-    lookupMessage="LOOKUP RFC "+rfcNum+" P2P-CI/1.0\n"\
+    lookupMessage="LOOKUP RFC "+str(rfcNum)+" P2P-CI/1.0\n"\
                   "Host: "+hostName+"\n"\
-                  "Port: "+hostPort+"\n"\
+                  "Port: "+str(hostPort)+"\n"\
                   "Title: "+rfcTitle
     return lookupMessage
 
 def p2sListMessage():
     listMessage="LIST ALL P2P-CI/1.0\n"\
                 "Host: "+hostName+"\n"\
-                "Port: "+hostPort
+                "Port: "+str(hostPort)
     return listMessage
 
-def p2pGetMessage(rfcNum,rfcHost):
-    getRequest="GET RFC "+rfcNum+" P2P-CI/1.0\n"\
+def p2pGetMessage(rfcNum,rfcHost,title):
+    getRequest="GET RFC "+str(rfcNum)+" P2P-CI/1.0\n"\
             "Host: "+rfcHost+"\n"\
-            "OS "+platform.platform()
+            "OS "+platform.platform()+"\n"\
+            "Title: "+title
     return getRequest
 
 def p2sGet():
-    rfcNum=input("Enter RFC Number: ")
-    rfcTitle=input("Enter RFC Title")
-    getRequest="GET-"+rfcNum+"-"+rfcTitle
-    p2sSocket.send(getRequest)
-    getResponse=p2sSocket.recv(1024)
-    print(getResponse)
-    # p2pRequest()
+    response=p2sLookup()
+    response=response.decode('utf-8')
+    res=list(response.split("\n"))
+    if "200 OK" in res[0]:
+        _,rfc,title,peername,peerport=res[1].split(" ")
+        p2pRequest(peername,peerport,rfc,title)
+    else:
+        print(res)
+        return
 
 def p2sLookup():
     rfcNum=input("Enter RFC Number: ")
     rfcTitle=input("Enter RFC Title: ")
     lookupMessage=p2sLookupMessage(rfcNum,rfcTitle)
-    p2sSocket.send(lookupMessage)
+    p2sSocket.sendall(lookupMessage.encode('utf-8'))
     p2sResponse=p2sSocket.recv(1024)
-    print(p2sResponse)
+    return p2sResponse
 
 def p2sList():
     listMessage=p2sListMessage()
-    p2sSocket.send(listMessage)
+    p2sSocket.sendall(listMessage.encode('utf-8'))
     listResponse=p2sSocket.recv(1024)
     print(listResponse)
 
 def p2sAdd():
     rfcNum=input("Enter RFC Number: ")
     rfcTitle=input("Enter RFC Title: ")
-    addMessage=p2sAddMessage(rfcNum,rfcTitle)
-    p2sSocket.send(addMessage)
-    p2sResponse=p2sSocket.recv(1024)
-    print(p2sResponse)
+    if str(rfcNum)+"-"+rfcTitle+".txt" not in os.listdir(rfcPath):
+        print("File not found in the RFC Directory")
+    else:
+        addMessage=p2sAddMessage(rfcNum,rfcTitle)
+        p2sSocket.sendall(addMessage.encode('utf-8'))
+        p2sResponse=p2sSocket.recv(1024)
+        print(p2sResponse.decode('utf-8'))
 
 def p2pRequest(rfcHost,peerPort,rfcNum,rfcTitle):
     p2pSocket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    p2pSocket.connect(rfcHost,peerPort)
-    rfcRequest=p2pGetMessage(rfcNum,rfcHost)
-    p2pSocket.sendall(rfcRequest)
-    rfcResponse=p2pSocket.recv(1024)
-    print(rfcResponse)
+    p2pSocket.connect(('10.160.0.4',int(peerPort)))
+    rfcRequest=p2pGetMessage(rfcNum,hostName,rfcTitle)
+    p2pSocket.sendall(rfcRequest.encode('utf-8'))
+    rfcResponse = ''
+    addMessage=''
+    while True:
+        data = p2pSocket.recv(1024)
+        if data:
+            rfcResponse += data.decode('utf-8')
+        else:
+            break
+    _,rfcResponse=rfcResponse.split("----")
+    file_=open(rfcPath+str(rfcNum)+"-"+rfcTitle+".txt", "w")
+    file_.write(rfcResponse[0])
+    file_.close()
     p2pSocket.close()
+    addMessage=p2sAddMessage(rfcNum,rfcTitle)
+    p2sSocket.sendall(addMessage.encode('utf-8'))
+    p2sResponse=p2sSocket.recv(1024)
+    print(p2sResponse.decode('utf-8'))
+    return
 
 def p2pResponse(rfcNum,rfcTitle):
-    rfcFile=rfcPath+"/RFC/"+rfcNum+"-"+rfcTitle+".txt"
+    rfcFile=rfcPath+str(rfcNum)+"-"+rfcTitle+".txt"
     if os.path.isfile(rfcFile):
         response="P2P-CI/1.0 200 OK\n"\
                  "Date: "+time.strftime("%a %d %b %Y %X %Z", time.localtime())+"\n"\
@@ -110,15 +134,23 @@ def p2pResponse(rfcNum,rfcTitle):
     return response
 
 def peerClient():
+    data=""
     clientSock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    clientSock.bind((hostName,hostPort))
+    clientSock.bind(('10.160.0.3',hostPort))
     clientSock.listen(5)
     while 1:
         dsocket,_ = clientSock.accept()
         message_received = dsocket.recv(307200)
         print(message_received)
-        # response_list = p2pResponse()
-        # dsocket.send(response_pickle)
+        message_received=message_received.decode('utf-8')
+        res_split=message_received.split("\n")
+        if "P2P-CI/1.0" not in res_split[0]:
+            data="P2P-CI/1.0 505 Version Not Supported"
+        else:
+            _,_,rfcnum,_=res_split[0].split(" ")
+            _,title=res_split[3].split(" ")
+            data=p2pResponse(rfcnum,title)
+        dsocket.sendall(data.encode('utf-8'))
         dsocket.close()
 
 clientThread=threading.Thread(target=peerClient)
@@ -140,7 +172,8 @@ while True:
 
     elif method=="EXIT":
         print("Exiting and Closing the connection")
-        p2sSocket.send("EXIT")
+        data="EXIT\nHost: "+hostName
+        p2sSocket.sendall(data.encode('utf-8'))
         p2sSocket.close()
         break
     else:
