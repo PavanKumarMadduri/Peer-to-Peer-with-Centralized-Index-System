@@ -10,7 +10,7 @@ server=('server', 7734)
 
 p2sSocket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 p2sSocket.connect(server)
-
+print("Connected to the", server)
 rfcList={}
 rfcPath=os.getcwd()+'/RFC/'
 for rfc in os.listdir(rfcPath):
@@ -64,7 +64,7 @@ def p2sGet():
         p2pRequest(peername,peerport,rfc,title)
     else:
         print(res)
-        return
+    return
 
 def p2sLookup():
     rfcNum=input("Enter RFC Number: ")
@@ -136,8 +136,12 @@ def p2pResponse(rfcNum,rfcTitle):
 def peerClient():
     data=""
     clientSock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    clientSock.bind(('10.160.0.3',hostPort))
-    clientSock.listen(5)
+    try:
+        clientSock.bind(('10.160.0.3',hostPort))
+        clientSock.listen(5)
+    except socket.error:
+        print("Port already in use")
+        raise SystemExit
     while True:
         dsocket,_ = clientSock.accept()
         message_received = dsocket.recv(307200)
@@ -157,7 +161,7 @@ clientThread=threading.Thread(target=peerClient)
 clientThread.start()
 
 while True:
-    method=input("GET, LIST, LOOKUP, ADD, EXIT: ")
+    method=input("GET, LIST, LOOKUP, ADD, DISCONNECT: ")
     if method=="GET":
         p2sGet()
 
@@ -170,12 +174,12 @@ while True:
     elif method=="ADD":
         p2sAdd()
 
-    elif method=="EXIT" or KeyboardInterrupt:
-        print("Exiting and Closing the connection")
-        data="EXIT\nHost: "+hostName
+    elif method=="DISCONNECT" or KeyboardInterrupt:
+        print("Closing the connection")
+        data="DISCONNECT\nHost: "+hostName
         p2sSocket.sendall(data.encode('utf-8'))
         p2sSocket.close()
-        break
+        clientThread.join()
+        raise SystemExit
     else:
         print("Wrong input.Try again")
-clientThread.join()
