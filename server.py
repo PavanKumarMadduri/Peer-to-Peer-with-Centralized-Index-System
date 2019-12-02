@@ -6,9 +6,9 @@ serverSock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSock.bind(server)
 serverSock.listen(5)
 
-clientList={}
-rfcList={}
-rfcTitle={}
+clientList={} # To maintain ClientName and PortNumber associated
+rfcList={} # To maintain RFC List and Clientnames as Key-Value
+rfcTitle={} #To maintain RFC Number and Title as Key-Value
 
 def addResponse(rfcNum,rfcTitle,clientName,clientPort):
     addMessage="P2P-CI/1.0 200 OK\n"\
@@ -115,12 +115,15 @@ def p2sRequest(conn):
             conn.sendall(data.encode('utf-8'))
         if "EXIT" in request:
             deleteClient(client)
-            print("Closing connection of "+client)
+            print("Closing connection of the client "+client)
             break
 
 while True:
-    conn, addr = serverSock.accept()
-    serverThread=threading.Thread(target=p2sRequest, args=(conn,))
-    serverThread.start()
-    serverThread.join()
-serverSock.close()
+    if KeyboardInterrupt:
+        serverSock.close()
+        raise SystemExit
+    else:
+        conn, addr = serverSock.accept()
+        serverThread=threading.Thread(target=p2sRequest, args=(conn,))
+        serverThread.start()
+        serverThread.join()

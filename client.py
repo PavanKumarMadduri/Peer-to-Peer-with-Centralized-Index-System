@@ -106,7 +106,7 @@ def p2pRequest(rfcHost,peerPort,rfcNum,rfcTitle):
             break
     _,rfcResponse=rfcResponse.split("----")
     file_=open(rfcPath+str(rfcNum)+"-"+rfcTitle+".txt", "w")
-    file_.write(rfcResponse[0])
+    file_.write(rfcResponse[1])
     file_.close()
     p2pSocket.close()
     addMessage=p2sAddMessage(rfcNum,rfcTitle)
@@ -126,7 +126,7 @@ def p2pResponse(rfcNum,rfcTitle):
                  "Content-Type: text/text\n"
         with open(rfcFile, "r") as data:
             rfc=data.read()
-        response=response+"----"+rfc
+        response+="----"+rfc
     else:
         response="P2P-CI/1.0 404 Not Found\n"\
                  "Date: "+time.strftime("%a %d %b %Y %X %Z", time.localtime())+"\n"\
@@ -138,7 +138,7 @@ def peerClient():
     clientSock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientSock.bind(('10.160.0.3',hostPort))
     clientSock.listen(5)
-    while 1:
+    while True:
         dsocket,_ = clientSock.accept()
         message_received = dsocket.recv(307200)
         print(message_received)
@@ -157,7 +157,7 @@ clientThread=threading.Thread(target=peerClient)
 clientThread.start()
 
 while True:
-    method=input("GET, LIST, LOOKUP, EXIT: ")
+    method=input("GET, LIST, LOOKUP, ADD, EXIT: ")
     if method=="GET":
         p2sGet()
 
@@ -170,7 +170,7 @@ while True:
     elif method=="ADD":
         p2sAdd()
 
-    elif method=="EXIT":
+    elif method=="EXIT" or KeyboardInterrupt:
         print("Exiting and Closing the connection")
         data="EXIT\nHost: "+hostName
         p2sSocket.sendall(data.encode('utf-8'))
