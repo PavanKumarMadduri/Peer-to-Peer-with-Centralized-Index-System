@@ -1,10 +1,15 @@
 import socket
 import threading
 
-server=('10.160.0.3', 7734)
+server=('', 7734)
 serverSock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serverSock.bind(server)
-serverSock.listen(5)
+try:
+    serverSock.bind(server)
+    serverSock.listen(5)
+    print("Started listening on Port", 7734)
+except socket.error:
+    print("Port already in use")
+    raise SystemExit
 
 clientList={} # To maintain ClientName and PortNumber associated
 rfcList={} # To maintain RFC List and Clientnames as Key-Value
@@ -87,6 +92,7 @@ def deleteClient(clientName):
         del rfcList[rfc]
         del rfcTitle[rfc]
     del clientList[clientName]
+    print(clientName+" has been deleted from the list")
 
 def p2sRequest(conn):
     while True:
@@ -113,17 +119,22 @@ def p2sRequest(conn):
         if "LOOKUP" in request:
             data=p2sLookup(req)
             conn.sendall(data.encode('utf-8'))
-        if "EXIT" in request:
+        if "DISCONNECT" in request:
             deleteClient(client)
-            print("Closing connection of the client "+client)
+            print("DISCONNECT message received from the "+client+" Closing connection of the client "+client)
             break
 
-while True:
-    if KeyboardInterrupt:
-        serverSock.close()
-        raise SystemExit
-    else:
+try:
+    while True:
         conn, addr = serverSock.accept()
+        print("Received connection from", addr)
         serverThread=threading.Thread(target=p2sRequest, args=(conn,))
         serverThread.start()
         serverThread.join()
+except KeyboardInterrupt:
+    if (threading.active_count()):
+        for thrd in threading.enumerate():
+            thrd.join()
+    serverSock.close()
+    print("Stopping the server")
+    raise SystemExit
