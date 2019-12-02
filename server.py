@@ -122,4 +122,5 @@ while True:
     conn, addr = serverSock.accept()
     serverThread=threading.Thread(target=p2sRequest, args=(conn,))
     serverThread.start()
+    serverThread.join()
 serverSock.close()
