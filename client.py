@@ -186,7 +186,7 @@ try:
             clientSock.shutdown(socket.SHUT_RD)
         else:
             print("Wrong input.Try again")
-        raise SystemExit
+    raise SystemExit
 except KeyboardInterrupt:
     flag=False
     print("Closing the connection")
