@@ -72,7 +72,7 @@ def p2sLookup(req):
     split_req=list(req[0].split("\n"))
     _,_,rfcnum,_=split_req[0].split(" ")
     _,title=split_req[3].split(" ")
-    if int(rfcnum) not in rfcTitle:
+    if not rfcnum.isnumeric() or int(rfcnum) not in rfcTitle:
         data="P2P-CI/1.0 400 Bad Request\n"
     elif "P2P-CI/1.0" not in split_req[0]:
         data="P2P-CI/1.0 505 Version Not Supported\n"
