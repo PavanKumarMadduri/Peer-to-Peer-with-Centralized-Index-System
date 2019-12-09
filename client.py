@@ -27,7 +27,7 @@ for rfcNum,rfcTitle in rfcList.items():
              "Port: "+str(hostPort)+"\n"\
              "Title: "+rfcTitle+"\n\n"
 p2sSocket.sendall(message.encode('utf-8'))
-registerResponse=p2sSocket.recv(1024)
+registerResponse=p2sSocket.recv(4096)
 print("Response received from the server\n", registerResponse.decode('utf-8'))
 
 def p2sAddMessage(rfcNum,rfcTitle):
@@ -73,7 +73,7 @@ def p2sLookup():
     rfcTitle=input("Enter RFC Title: ")
     lookupMessage=p2sLookupMessage(rfcNum,rfcTitle)
     p2sSocket.sendall(lookupMessage.encode('utf-8'))
-    p2sResponse=p2sSocket.recv(1024)
+    p2sResponse=p2sSocket.recv(4096)
     print(p2sResponse.decode('utf-8'))
     return p2sResponse
 
@@ -91,7 +91,7 @@ def p2sAdd():
     else:
         addMessage=p2sAddMessage(rfcNum,rfcTitle)
         p2sSocket.sendall(addMessage.encode('utf-8'))
-        p2sResponse=p2sSocket.recv(1024)
+        p2sResponse=p2sSocket.recv(4096)
         print(p2sResponse.decode('utf-8'))
 
 def p2pRequest(rfcHost,peerPort,rfcNum,rfcTitle):
@@ -102,7 +102,7 @@ def p2pRequest(rfcHost,peerPort,rfcNum,rfcTitle):
     rfcResponse = ''
     addMessage=''
     while True:
-        data = p2pSocket.recv(1024)
+        data = p2pSocket.recv(4096)
         if data:
             rfcResponse += data.decode('utf-8')
         else:
@@ -185,7 +185,6 @@ try:
             data="DISCONNECT\nHost: "+hostName
             p2sSocket.sendall(data.encode('utf-8'))
             p2sSocket.close()
-            clientThread.join(timeout=0.5)
             raise SystemExit
         else:
             print("Wrong input.Try again")
@@ -195,5 +194,4 @@ except KeyboardInterrupt:
     data="DISCONNECT\nHost: "+hostName
     p2sSocket.sendall(data.encode('utf-8'))
     p2sSocket.close()
-    clientThread.join(timeout=0.5)
     raise SystemExit
