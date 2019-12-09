@@ -96,8 +96,7 @@ def deleteClient(clientName):
     print(clientName+" has been deleted from the list")
 
 def p2sRequest(conn):
-    global flag
-    while flag:
+    while True:
         request=conn.recv(1024)
         request=request.decode('utf-8')
         print("Message Received\n",request)           
@@ -122,7 +121,7 @@ def p2sRequest(conn):
         if "DISCONNECT" in request:
             print("DISCONNECT message received from the "+client+" Closing connection of the client "+client)
             deleteClient(client)
-            flag=False
+            break
 try:
     while True:
         conn, addr = serverSock.accept()
