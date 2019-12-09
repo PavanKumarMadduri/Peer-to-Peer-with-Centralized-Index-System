@@ -37,7 +37,6 @@ def listResponse():
     return listMessage
 
 def p2sAdd(req):
-    data=""
     for method in req:
         split_req=list(method.split("\n"))
         if "P2P-CI/1.0" not in split_req[0]:
@@ -50,31 +49,29 @@ def p2sAdd(req):
             if int(rfcNum) in rfcTitle:
                 if rfcTitle[int(rfcNum)]==Title:
                     rfcList[int(rfcNum)].append(client)
-                    data+=addResponse(rfcNum,Title,client,clientPort)
+                    data=addResponse(rfcNum,Title,client,clientPort)
                 else:
-                    data+="P2P-CI/1.0 400 Bad Request\n"
+                    data="P2P-CI/1.0 400 Bad Request\n"
             else:
                 rfcTitle[int(rfcNum)]=Title
                 rfcList[int(rfcNum)]=[client]
-                data+=addResponse(rfcNum,Title,client,clientPort)
+                data=addResponse(rfcNum,Title,client,clientPort)
     return data
 
 def p2sList(req):
-    data=""
     split_req=list(req[0].split("\n"))
     if "P2P-CI/1.0" not in split_req[0]:
-        data+="P2P-CI/1.0 505 Version Not Supported\n"
+        data="P2P-CI/1.0 505 Version Not Supported\n"
     else:
-        data+=listResponse()
+        data=listResponse()
     return data
 
 def p2sLookup(req):
-    data=""
     split_req=list(req[0].split("\n"))
     _,_,rfcnum,_=split_req[0].split(" ")
     _,title=split_req[3].split(" ")
     if int(rfcnum) not in rfcTitle:
-        data+="P2P-CI/1.0 400 Bad Request\n"
+        data="P2P-CI/1.0 400 Bad Request\n"
     elif "P2P-CI/1.0" not in split_req[0]:
         data="P2P-CI/1.0 505 Version Not Supported\n"
     elif rfcTitle[int(rfcnum)]==title:
