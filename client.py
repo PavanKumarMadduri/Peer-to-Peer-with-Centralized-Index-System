@@ -146,19 +146,22 @@ def peerClient():
         print("Port already in use")
         raise SystemExit
     while flag:
-        dsocket,_ = clientSock.accept()
-        message_received = dsocket.recv(4096)
-        message_received=message_received.decode('utf-8')
-        print(message_received)
-        res_split=message_received.split("\n")
-        if "P2P-CI/1.0" not in res_split[0]:
-            data="P2P-CI/1.0 505 Version Not Supported"
-        else:
-            _,_,rfcnum,_=res_split[0].split(" ")
-            _,title=res_split[3].split(" ")
-            data=p2pResponse(rfcnum,title)
-        dsocket.sendall(data.encode('utf-8'))
-        dsocket.close()
+        try:
+            dsocket,_ = clientSock.accept()
+            message_received = dsocket.recv(4096)
+            message_received=message_received.decode('utf-8')
+            print(message_received)
+            res_split=message_received.split("\n")
+            if "P2P-CI/1.0" not in res_split[0]:
+                data="P2P-CI/1.0 505 Version Not Supported"
+            else:
+                _,_,rfcnum,_=res_split[0].split(" ")
+                _,title=res_split[3].split(" ")
+                data=p2pResponse(rfcnum,title)
+            dsocket.sendall(data.encode('utf-8'))
+            dsocket.close()
+        except OSError:
+            flag=False
 
 clientThread=threading.Thread(target=peerClient)
 clientThread.start()
