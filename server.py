@@ -134,7 +134,7 @@ try:
 except KeyboardInterrupt:
     if (threading.active_count()):
         for thrd in threading.enumerate():
-            thrd.join()
+            thrd.join(timeout=0.5)
     serverSock.close()
     print("Stopping the server")
     raise SystemExit
