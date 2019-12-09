@@ -51,7 +51,7 @@ def p2sAdd(req):
             if int(rfcNum) in rfcTitle:
                 if rfcTitle[int(rfcNum)]==Title:
                     rfcList[int(rfcNum)].append(client)
-                    data=addResponse(rfcNum,Title,client,clientPort)
+                    data+=addResponse(rfcNum,Title,client,clientPort)
                 else:
                     data="P2P-CI/1.0 400 Bad Request\n"
             else:
