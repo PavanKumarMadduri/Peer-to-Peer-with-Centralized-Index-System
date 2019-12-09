@@ -73,13 +73,14 @@ def p2sLookup():
     lookupMessage=p2sLookupMessage(rfcNum,rfcTitle)
     p2sSocket.sendall(lookupMessage.encode('utf-8'))
     p2sResponse=p2sSocket.recv(1024)
+    print(p2sResponse.decode('utf-8'))
     return p2sResponse
 
 def p2sList():
     listMessage=p2sListMessage()
     p2sSocket.sendall(listMessage.encode('utf-8'))
     listResponse=p2sSocket.recv(1024)
-    print(listResponse)
+    print(listResponse.decode('utf-8'))
 
 def p2sAdd():
     rfcNum=input("Enter RFC Number: ")
@@ -105,7 +106,7 @@ def p2pRequest(rfcHost,peerPort,rfcNum,rfcTitle):
             rfcResponse += data.decode('utf-8')
         else:
             break
-    _,rfcResponse=rfcResponse.split("----")
+    rfcResponse=rfcResponse.split("----")
     file_=open(rfcPath+str(rfcNum)+"-"+rfcTitle+".txt", "w")
     file_.write(rfcResponse[1])
     file_.close()
@@ -146,8 +147,8 @@ def peerClient():
     while True:
         dsocket,_ = clientSock.accept()
         message_received = dsocket.recv(307200)
-        print(message_received)
         message_received=message_received.decode('utf-8')
+        print(message_received)
         res_split=message_received.split("\n")
         if "P2P-CI/1.0" not in res_split[0]:
             data="P2P-CI/1.0 505 Version Not Supported"
