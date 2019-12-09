@@ -41,7 +41,7 @@ def p2sAdd(req):
     for method in req:
         split_req=list(method.split("\n"))
         if "P2P-CI/1.0" not in split_req[0]:
-            data+="P2P-CI/1.0 505 Version Not Supported\n"
+            data="P2P-CI/1.0 505 Version Not Supported\n"
         else:
             _,_,rfcNum,_=split_req[0].split(" ")
             _,client=split_req[1].split(" ")
@@ -56,7 +56,7 @@ def p2sAdd(req):
             else:
                 rfcTitle[int(rfcNum)]=Title
                 rfcList[int(rfcNum)]=[client]
-                data=addResponse(rfcNum,Title,client,clientPort)
+                data+=addResponse(rfcNum,Title,client,clientPort)
     return data
 
 def p2sList(req):
