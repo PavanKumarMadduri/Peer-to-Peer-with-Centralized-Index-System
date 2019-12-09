@@ -122,7 +122,7 @@ def p2sRequest(conn):
         if "DISCONNECT" in request:
             print("DISCONNECT message received from the "+client+" Closing connection of the client "+client)
             deleteClient(client)
-            break
+            flag=False
 try:
     while True:
         conn, addr = serverSock.accept()
@@ -132,5 +132,5 @@ try:
 except KeyboardInterrupt:
     flag=False
     serverSock.close()
-    print("Stopping the server")
+    print("Stopping the server\n")
     raise SystemExit
