@@ -48,12 +48,14 @@ def p2sAdd(req):
             _,client=split_req[1].split(" ")
             _,clientPort=split_req[2].split(" ")
             _,Title=split_req[3].split(" ")
-            if int(rfcNum) in rfcTitle:
+            if int(rfcNum) in rfcTitle and client not in rfcList[int(rfcNum)]:
                 if rfcTitle[int(rfcNum)]==Title:
                     rfcList[int(rfcNum)].append(client)
                     data+=addResponse(rfcNum,Title,client,clientPort)
                 else:
                     data="P2P-CI/1.0 400 Bad Request\n"
+            elif int(rfcNum) in rfcTitle and client in rfcList[int(rfcNum)]:
+                data+=addResponse(rfcNum,Title,client,clientPort)
             else:
                 rfcTitle[int(rfcNum)]=Title
                 rfcList[int(rfcNum)]=[client]
