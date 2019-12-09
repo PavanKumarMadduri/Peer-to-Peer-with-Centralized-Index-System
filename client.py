@@ -135,11 +135,10 @@ def p2pResponse(rfcNum,rfcTitle):
                  "Date: "+time.strftime("%a %d %b %Y %X %Z", time.localtime())+"\n"\
                  "OS: "+platform.platform()+"\n"
     return response
-
+clientSock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 def peerClient():
-    global flag
+    global flag,clientSock
     data=""
-    clientSock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         clientSock.bind((hostName,hostPort))
         clientSock.listen(5)
@@ -163,7 +162,6 @@ def peerClient():
 
 clientThread=threading.Thread(target=peerClient)
 clientThread.start()
-
 try:
     while flag:
         method=input("GET, LIST, LOOKUP, ADD, DISCONNECT: ")
@@ -185,7 +183,7 @@ try:
             data="DISCONNECT\nHost: "+hostName
             p2sSocket.sendall(data.encode('utf-8'))
             p2sSocket.close()
-            clientThread.join(timeout=0.1)
+            clientSock.shutdown(SHUT_RD)
         else:
             print("Wrong input.Try again")
 except KeyboardInterrupt:
