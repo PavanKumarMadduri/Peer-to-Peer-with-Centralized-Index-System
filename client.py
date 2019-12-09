@@ -14,6 +14,7 @@ p2sSocket.connect(server)
 print("Connected to the", server)
 rfcList={}
 rfcPath=os.getcwd()+'/RFC/'
+flag=True
 for rfc in os.listdir(rfcPath):
     rfcNum,rfcTitle=rfc.split("-")
     rfcTitle,_=rfcTitle.split(".")
@@ -136,6 +137,7 @@ def p2pResponse(rfcNum,rfcTitle):
     return response
 
 def peerClient():
+    global flag
     data=""
     clientSock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -144,7 +146,7 @@ def peerClient():
     except socket.error:
         print("Port already in use")
         raise SystemExit
-    while True:
+    while flag:
         dsocket,_ = clientSock.accept()
         message_received = dsocket.recv(307200)
         message_received=message_received.decode('utf-8')
@@ -162,26 +164,36 @@ def peerClient():
 clientThread=threading.Thread(target=peerClient)
 clientThread.start()
 
-while True:
-    method=input("GET, LIST, LOOKUP, ADD, DISCONNECT: ")
-    if method=="GET":
-        p2sGet()
+try:
+    while True:
+        method=input("GET, LIST, LOOKUP, ADD, DISCONNECT: ")
+        if method=="GET":
+            p2sGet()
 
-    elif method=="LIST":
-        p2sList()
+        elif method=="LIST":
+            p2sList()
 
-    elif method=="LOOKUP":
-        p2sLookup()
+        elif method=="LOOKUP":
+            p2sLookup()
 
-    elif method=="ADD":
-        p2sAdd()
+        elif method=="ADD":
+            p2sAdd()
 
-    elif method=="DISCONNECT" or KeyboardInterrupt:
-        print("Closing the connection")
-        data="DISCONNECT\nHost: "+hostName
-        p2sSocket.sendall(data.encode('utf-8'))
-        p2sSocket.close()
-        clientThread.join()
-        raise SystemExit
-    else:
-        print("Wrong input.Try again")
+        elif method=="DISCONNECT":
+            flag=False
+            print("Closing the connection")
+            data="DISCONNECT\nHost: "+hostName
+            p2sSocket.sendall(data.encode('utf-8'))
+            p2sSocket.close()
+            clientThread.join(timeout=0.5)
+            raise SystemExit
+        else:
+            print("Wrong input.Try again")
+except KeyboardInterrupt:
+    flag=False
+    print("Closing the connection")
+    data="DISCONNECT\nHost: "+hostName
+    p2sSocket.sendall(data.encode('utf-8'))
+    p2sSocket.close()
+    clientThread.join(timeout=0.5)
+    raise SystemExit
