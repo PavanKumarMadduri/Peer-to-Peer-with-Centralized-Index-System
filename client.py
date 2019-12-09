@@ -3,11 +3,12 @@ import platform
 import socket
 import time
 import threading
+import random
 
 hostName=platform.node()
-hostPort=1111
+hostPort=random.randrange(1025,60000)
 server=('server', 7734)
-
+print("Client's Hostname-PortNumber", hostName, hostPort)
 p2sSocket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 p2sSocket.connect(server)
 print("Connected to the", server)
@@ -93,7 +94,7 @@ def p2sAdd():
 
 def p2pRequest(rfcHost,peerPort,rfcNum,rfcTitle):
     p2pSocket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    p2pSocket.connect(('10.160.0.4',int(peerPort)))
+    p2pSocket.connect((rfcHost,int(peerPort)))
     rfcRequest=p2pGetMessage(rfcNum,hostName,rfcTitle)
     p2pSocket.sendall(rfcRequest.encode('utf-8'))
     rfcResponse = ''
@@ -137,8 +138,9 @@ def peerClient():
     data=""
     clientSock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        clientSock.bind(('10.160.0.3',hostPort))
+        clientSock.bind((hostName,hostPort))
         clientSock.listen(5)
+        print("Client started listening on", hostPort)
     except socket.error:
         print("Port already in use")
         raise SystemExit
