@@ -17,7 +17,7 @@ rfcTitle={} #To maintain RFC Number and Title as Key-Value
 
 def addResponse(rfcNum,rfcTitle,clientName,clientPort):
     addMessage="P2P-CI/1.0 200 OK\n"\
-                "RFC "+str(rfcNum)+" "+rfcTitle+" "+clientName+" "+clientPort
+                "RFC "+str(rfcNum)+" "+rfcTitle+" "+clientName+" "+clientPort+"\n"
     return addMessage
 
 def lookupResponse(rfcNum):
@@ -98,13 +98,11 @@ def p2sRequest(conn):
     while True:
         request=conn.recv(1024)
         request=request.decode('utf-8')
-        print(request)
+        print("Message Received\n",request)
         req=request.split("\n\n")
         if "\n\n" in request:
             del req[-1]
-        print(req)
         split_req=list(req[0].split("\n"))
-        print(split_req)
         _,client=split_req[1].split(" ")
         if client not in clientList:
             _,clientPort=split_req[2].split(" ")

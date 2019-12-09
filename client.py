@@ -27,7 +27,7 @@ for rfcNum,rfcTitle in rfcList.items():
              "Title: "+rfcTitle+"\n\n"
 p2sSocket.sendall(message.encode('utf-8'))
 registerResponse=p2sSocket.recv(1024)
-print(registerResponse.decode('utf-8'))
+print("Response received from the server\n", registerResponse.decode('utf-8'))
 
 def p2sAddMessage(rfcNum,rfcTitle):
     addMessage="ADD RFC "+str(rfcNum)+" P2P-CI/1.0\n"\
@@ -85,7 +85,7 @@ def p2sAdd():
     rfcNum=input("Enter RFC Number: ")
     rfcTitle=input("Enter RFC Title: ")
     if str(rfcNum)+"-"+rfcTitle+".txt" not in os.listdir(rfcPath):
-        print("File not found in the RFC Directory")
+        print("File not found in the RFC Directory\n")
     else:
         addMessage=p2sAddMessage(rfcNum,rfcTitle)
         p2sSocket.sendall(addMessage.encode('utf-8'))
@@ -140,7 +140,6 @@ def peerClient():
     try:
         clientSock.bind((hostName,hostPort))
         clientSock.listen(5)
-        print("Client started listening on", hostPort)
     except socket.error:
         print("Port already in use")
         raise SystemExit
