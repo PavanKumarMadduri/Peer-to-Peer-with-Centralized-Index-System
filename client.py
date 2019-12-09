@@ -183,14 +183,15 @@ try:
             data="DISCONNECT\nHost: "+hostName
             p2sSocket.sendall(data.encode('utf-8'))
             p2sSocket.close()
-            clientSock.shutdown()
+            clientSock.shutdown(socket.SHUT_RD)
         else:
             print("Wrong input.Try again")
+        raise SystemExit
 except KeyboardInterrupt:
     flag=False
     print("Closing the connection")
     data="DISCONNECT\nHost: "+hostName
     p2sSocket.sendall(data.encode('utf-8'))
     p2sSocket.close()
+    clientSock.shutdown(socket.SHUT_RD)
     raise SystemExit
-exit()
