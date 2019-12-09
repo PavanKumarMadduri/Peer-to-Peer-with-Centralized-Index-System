@@ -65,7 +65,7 @@ def p2sGet():
         _,rfc,title,peername,peerport=res[1].split(" ")
         p2pRequest(peername,peerport,rfc,title)
     else:
-        print(res)
+        print(res[0])
     return
 
 def p2sLookup():
