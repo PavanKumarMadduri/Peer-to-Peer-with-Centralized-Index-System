@@ -38,6 +38,7 @@ def listResponse():
     return listMessage
 
 def p2sAdd(req):
+    data=""
     for method in req:
         split_req=list(method.split("\n"))
         if "P2P-CI/1.0" not in split_req[0]:
