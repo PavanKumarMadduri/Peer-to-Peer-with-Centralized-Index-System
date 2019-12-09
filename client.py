@@ -114,7 +114,7 @@ def p2pRequest(rfcHost,peerPort,rfcNum,rfcTitle):
     p2pSocket.close()
     addMessage=p2sAddMessage(rfcNum,rfcTitle)
     p2sSocket.sendall(addMessage.encode('utf-8'))
-    p2sResponse=p2sSocket.recv(1024)
+    p2sResponse=p2sSocket.recv(4096)
     print(p2sResponse.decode('utf-8'))
     return
 
@@ -148,13 +148,9 @@ def peerClient():
         raise SystemExit
     while flag:
         dsocket,_ = clientSock.accept()
-        message_received = dsocket.recv(307200)
+        message_received = dsocket.recv(4096)
         message_received=message_received.decode('utf-8')
         print(message_received)
-        if message_received=="TERMINATE":
-            dsocket.close()
-            flag=False
-            continue
         res_split=message_received.split("\n")
         if "P2P-CI/1.0" not in res_split[0]:
             data="P2P-CI/1.0 505 Version Not Supported"
@@ -169,7 +165,7 @@ clientThread=threading.Thread(target=peerClient)
 clientThread.start()
 
 try:
-    while True:
+    while flag:
         method=input("GET, LIST, LOOKUP, ADD, DISCONNECT: ")
         if method=="GET":
             p2sGet()
@@ -189,10 +185,9 @@ try:
             data="DISCONNECT\nHost: "+hostName
             p2sSocket.sendall(data.encode('utf-8'))
             p2sSocket.close()
-            break
+            clientThread.join(timeout=0.1)
         else:
             print("Wrong input.Try again")
-    raise SystemExit
 except KeyboardInterrupt:
     flag=False
     print("Closing the connection")
@@ -200,3 +195,4 @@ except KeyboardInterrupt:
     p2sSocket.sendall(data.encode('utf-8'))
     p2sSocket.close()
     raise SystemExit
+exit()

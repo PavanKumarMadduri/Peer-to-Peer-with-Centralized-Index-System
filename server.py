@@ -105,7 +105,6 @@ def p2sRequest(conn):
         if "\n\n" in request:
             del req[-1]
         split_req=list(req[0].split("\n"))
-        print(split_req)
         _,client=split_req[1].split(" ")
         if client not in clientList:
             _,clientPort=split_req[2].split(" ")
@@ -123,7 +122,6 @@ def p2sRequest(conn):
         if "DISCONNECT" in request:
             print("DISCONNECT message received from the "+client+" Closing connection of the client "+client)
             deleteClient(client)
-            conn.sendall("TERMINATE".encode('utf-8'))
             break
 try:
     while True:
