@@ -120,10 +120,8 @@ def p2sRequest(conn):
             data=p2sLookup(req)
             conn.sendall(data.encode('utf-8'))
         if "DISCONNECT" in request:
-            deleteClient(client)
             print("DISCONNECT message received from the "+client+" Closing connection of the client "+client)
-            break
-
+            deleteClient(client)
 try:
     while True:
         conn, addr = serverSock.accept()
