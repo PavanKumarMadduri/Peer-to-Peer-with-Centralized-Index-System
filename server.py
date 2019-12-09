@@ -14,6 +14,7 @@ except socket.error:
 clientList={} # To maintain ClientName and PortNumber associated
 rfcList={} # To maintain RFC List and Clientnames as Key-Value
 rfcTitle={} #To maintain RFC Number and Title as Key-Value
+flag=True
 
 def addResponse(rfcNum,rfcTitle,clientName,clientPort):
     addMessage="P2P-CI/1.0 200 OK\n"\
@@ -94,7 +95,8 @@ def deleteClient(clientName):
     print(clientName+" has been deleted from the list")
 
 def p2sRequest(conn):
-    while True:
+    global flag
+    while flag:
         request=conn.recv(1024)
         request=request.decode('utf-8')
         print("Message Received\n",request)
@@ -128,6 +130,7 @@ try:
         serverThread=threading.Thread(target=p2sRequest, args=(conn,))
         serverThread.start()
 except KeyboardInterrupt:
+    flag=False
     if (threading.active_count()):
         for thrd in threading.enumerate():
             thrd.join(timeout=0.5)
