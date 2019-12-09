@@ -99,7 +99,7 @@ def p2sRequest(conn):
     while flag:
         request=conn.recv(1024)
         request=request.decode('utf-8')
-        print("Message Received\n",request)
+        print("Message Received\n",request)           
         req=request.split("\n\n")
         if "\n\n" in request:
             del req[-1]
