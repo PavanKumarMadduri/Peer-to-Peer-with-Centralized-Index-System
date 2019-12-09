@@ -151,6 +151,10 @@ def peerClient():
         message_received = dsocket.recv(307200)
         message_received=message_received.decode('utf-8')
         print(message_received)
+        if message_received=="TERMINATE":
+            dsocket.close()
+            flag=False
+            continue
         res_split=message_received.split("\n")
         if "P2P-CI/1.0" not in res_split[0]:
             data="P2P-CI/1.0 505 Version Not Supported"

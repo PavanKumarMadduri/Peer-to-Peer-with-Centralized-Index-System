@@ -123,6 +123,7 @@ def p2sRequest(conn):
         if "DISCONNECT" in request:
             print("DISCONNECT message received from the "+client+" Closing connection of the client "+client)
             deleteClient(client)
+            conn.sendall("TERMINATE".encode('utf-8'))
             break
 try:
     while True:
